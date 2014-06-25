@@ -2,6 +2,7 @@ module Koudoku
   module ApplicationHelper
 
     def plan_price(plan)
+      puts plan.price
       "#{number_to_currency(plan.price)}/#{plan_interval(plan)}"
     end
 

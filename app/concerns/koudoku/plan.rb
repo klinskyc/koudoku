@@ -1,4 +1,5 @@
 module Koudoku::Plan
+	
   extend ActiveSupport::Concern
 
   included do
