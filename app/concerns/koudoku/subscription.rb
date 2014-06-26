@@ -1,7 +1,26 @@
 module Koudoku::Subscription
   extend ActiveSupport::Concern
-
   included do
+
+    include AASM
+
+    aasm, column: 'status' do
+      state :active, inital: true
+      state :inactive
+      state :pending_cancellation
+
+      event :activate do
+        transitions from: [:inactive, :pending_cancellation], to: :active 
+      end
+
+      event :deactivate do
+        transitions from: :active, to: :inactive 
+      end
+
+      event :cancel do
+        transitions from: :active, to: :pending_cancellation 
+      end
+    end
 
     # We don't store these one-time use tokens, but this is what Stripe provides
     # client-side after storing the credit card information.
