@@ -26,15 +26,15 @@ module Koudoku
       require "securerandom"
       api_key = SecureRandom.uuid
       create_file 'config/initializers/koudoku.rb' do
-      <<-RUBY
-Koudoku.setup do |config|
-  config.webhooks_api_key = "#{api_key}"
-  config.subscriptions_owned_by = :user
-  config.stripe_publishable_key = ENV['STRIPE_PUBLISHABLE_KEY']
-  config.stripe_secret_key = ENV['STRIPE_SECRET_KEY']
-  # config.free_trial_length = 30
-end
-RUBY
+        <<-RUBY
+          Koudoku.setup do |config|
+            config.webhooks_api_key = "#{api_key}"
+            config.subscriptions_owned_by = :user
+            config.stripe_publishable_key = ENV['STRIPE_PUBLISHABLE_KEY']
+            config.stripe_secret_key = ENV['STRIPE_SECRET_KEY']
+            # config.free_trial_length = 30
+          end
+        RUBY
       end
 
       # Generate subscription.
@@ -59,15 +59,16 @@ RUBY
 
       # Add webhooks to the route.
       gsub_file "config/routes.rb", /Application.routes.draw do/,  <<-RUBY
-Application.routes.draw do
 
-  # Added by Koudoku.
-  mount Koudoku::Engine, at: 'koudoku'
-  scope module: 'koudoku' do
-    get 'pricing' => 'subscriptions#index', as: 'pricing'
-  end
+      Application.routes.draw do
 
-RUBY
+        # Added by Koudoku.
+        mount Koudoku::Engine, at: 'koudoku'
+        scope module: 'koudoku' do
+          get 'pricing' => 'subscriptions#index', as: 'pricing'
+        end
+
+      RUBY
       
       # Show the user the API key we generated.
       say "\nTo enable support for Stripe webhooks, point it to \"/koudoku/webhooks?api_key=#{api_key}\". This API key has been randomly generated, so it's unique to your application.\n\n"

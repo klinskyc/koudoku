@@ -47,7 +47,6 @@ module Koudoku::Subscription
             customer.cancel_subscription(:at_period_end =>true)
 
             finalize_cancelation!
-            raise
           end
 
         # otherwise
