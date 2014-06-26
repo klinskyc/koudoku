@@ -183,6 +183,16 @@ module Koudoku::Subscription
     (plan_id_was.present? and plan_id_was < plan_id) or plan_id_was.nil?
   end
 
+  def cancel!
+    prepare_for_cancelation
+
+    self.current_price = nil
+    self.plan_id = nil
+    finalize_cancelation!
+
+    self.save
+  end
+
   # Template methods.
   def prepare_for_plan_change
   end

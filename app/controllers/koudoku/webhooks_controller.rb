@@ -28,7 +28,11 @@ module Koudoku
     
         subscription = ::Subscription.find_by_stripe_id(stripe_id)
         subscription.charge_disputed
-      
+      elsif data_json['type'] == "customer.subscription.ended"
+        
+        stripe_id = data_json['data']['object']['customer']
+        subscription = ::Subscription.find_by_stripe_id(stripe_id)
+        subscription.cancel!
       end
       
       render nothing: true

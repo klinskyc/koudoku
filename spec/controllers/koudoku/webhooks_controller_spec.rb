@@ -53,6 +53,19 @@ describe Koudoku::WebhooksController do
         end
       end
     end
+
+    describe "customer.subscription.ended" do
+      describe "POST create" do
+        it 'calls charge_disputed for the subscription' do
+          @subscription.should_receive(:cancel!).once
+          raw_post :create, {use_route: 'koudoku', api_key: Koudoku.webhooks_api_key}, webhooks_json('customer.subscription.ended', customer: @subscription.stripe_id)
+        end
+        it 'returns 200' do
+          raw_post :create, {use_route: 'koudoku', api_key: Koudoku.webhooks_api_key}, webhooks_json('customer.subscription.ended', customer: @subscription.stripe_id)
+          response.code.should eq("200") 
+        end
+      end
+    end
   end
   it 'returns an error if the subscription can not be found' do
     expect {
