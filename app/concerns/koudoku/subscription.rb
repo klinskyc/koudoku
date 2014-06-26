@@ -51,7 +51,6 @@ module Koudoku::Subscription
             customer.cancel_subscription
 
             finalize_cancelation!
-
           end
 
         # otherwise
