@@ -1,10 +1,11 @@
 module Koudoku::Subscription
   extend ActiveSupport::Concern
+
   included do
 
     include AASM
 
-    aasm, column: 'status' do
+    aasm column: 'status' do
       state :active, inital: true
       state :inactive
       state :pending_cancellation
@@ -14,7 +15,7 @@ module Koudoku::Subscription
       end
 
       event :deactivate do
-        transitions from: :active, to: :inactive 
+        transitions from: [:active, :pending_cancellation], to: :inactive 
       end
 
       event :cancel do
@@ -64,6 +65,8 @@ module Koudoku::Subscription
 
             # delete the subscription.
             customer.cancel_subscription(:at_period_end =>true)
+
+            self.cancel
 
             finalize_cancelation!
           end
@@ -202,6 +205,8 @@ module Koudoku::Subscription
 
     self.current_price = nil
     self.plan_id = nil
+    self.deactivate
+    
     finalize_cancelation!
 
     self.save
