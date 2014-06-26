@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20130520163946) do
+ActiveRecord::Schema.define(version: 20140626050616543543459000) do
 
   create_table "coupons", force: true do |t|
     t.string   "code"
@@ -48,6 +48,7 @@ ActiveRecord::Schema.define(version: 20130520163946) do
     t.integer  "customer_id"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.string   "status"
   end
 
 end

@@ -66,6 +66,12 @@ To help you understand the attributes:
 | `highlight`     | boolean | *Optional.* Whether to highlight the plan on the pricing page. |
 
 The only view installed locally into your app by default is the `koudoku/subscriptions/_social_proof.html.erb` partial which is displayed alongside the pricing table. It's designed as a placeholder where you can provide quotes about your product from customers that could positively influence your visitors.
+
+## Upgrading 
+If your upgrading from version 0.0.11 or lower run this to generate additional migrations for state_machine
+```
+rails g koudoku:state_machine
+```
     
 ### Configuring Stripe API Keys
 
