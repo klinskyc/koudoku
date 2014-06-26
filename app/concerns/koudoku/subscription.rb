@@ -34,7 +34,7 @@ module Koudoku::Subscription
             prepare_for_upgrade if upgrading?
 
             # update the package level with stripe.
-            customer.update_subscription(:plan => self.plan.stripe_id)
+            customer.update_subscription(:plan => self.plan.stripe_id, :at_period_end =>true)
 
             finalize_downgrade! if downgrading?
             finalize_upgrade! if upgrading?
