@@ -34,23 +34,20 @@ module Koudoku::Subscription
             prepare_for_upgrade if upgrading?
 
             # update the package level with stripe.
-            customer.update_subscription(:plan => self.plan.stripe_id, :at_period_end =>true)
+            customer.update_subscription(:plan => self.plan.stripe_id)
 
             finalize_downgrade! if downgrading?
             finalize_upgrade! if upgrading?
 
           # if no plan has been selected.
           else
-
             prepare_for_cancelation
 
-            # Remove the current pricing.
-            self.current_price = nil
-
             # delete the subscription.
-            customer.cancel_subscription
+            customer.cancel_subscription(:at_period_end =>true)
 
             finalize_cancelation!
+            raise
           end
 
         # otherwise
@@ -97,7 +94,6 @@ module Koudoku::Subscription
             finalize_upgrade!
 
           else
-
             # This should never happen.
 
             self.plan_id = nil

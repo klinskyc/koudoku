@@ -130,8 +130,6 @@ module Koudoku
 
     def cancel
       flash[:notice] = "You've successfully cancelled your subscription."
-      @subscription.plan_id = nil
-      @subscription.save
       redirect_to owner_subscription_path(@owner, @subscription)
     end
 
