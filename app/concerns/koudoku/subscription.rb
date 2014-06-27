@@ -18,7 +18,7 @@ module Koudoku::Subscription
         transitions from: [:active, :pending_cancellation], to: :inactive 
       end
 
-      event :cancel do
+      event :cancel, after: :process_cancellation do
         transitions from: :active, to: :pending_cancellation 
       end
     end
@@ -200,13 +200,18 @@ module Koudoku::Subscription
     (plan_id_was.present? and plan_id_was < plan_id) or plan_id_was.nil?
   end
 
-  def cancel!
+  def process_cancellation
+    customer = Stripe::Customer.retrieve(self.stripe_id)
+    customer.cancel_subscription(:at_period_end =>true)
+  end
+
+  def cancel_subscription!
     prepare_for_cancelation
 
     self.current_price = nil
     self.plan_id = nil
     self.deactivate
-    
+
     finalize_cancelation!
 
     self.save

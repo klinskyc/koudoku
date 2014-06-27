@@ -3,10 +3,8 @@ require 'spec_helper'
 describe Koudoku::WebhooksController do
 
   before do
-
     # disable any interaction with stripe for these tests.
     Subscription.any_instance.stub(:processing!).and_return(true)
-    
   end
   
   describe 'when a valid subscription exists' do
@@ -17,6 +15,7 @@ describe Koudoku::WebhooksController do
       # make sure they get this exact instance.
       Subscription.stub('find_by_stripe_id').and_return(@subscription)
     end
+    
     describe "invoice.payment_succeeded" do
       describe "POST create" do
         it 'calls payment_succeeded for the subscription' do
@@ -29,6 +28,7 @@ describe Koudoku::WebhooksController do
         end
       end
     end
+
     describe "charge.failed" do
       describe "POST create" do
         it 'calls charge_failed for the subscription' do
@@ -61,6 +61,7 @@ describe Koudoku::WebhooksController do
           raw_post :create, {use_route: 'koudoku', api_key: Koudoku.webhooks_api_key}, webhooks_json('customer.subscription.ended', customer: @subscription.stripe_id)
         end
         it 'returns 200' do
+          @subscription.should_receive(:cancel!).once
           raw_post :create, {use_route: 'koudoku', api_key: Koudoku.webhooks_api_key}, webhooks_json('customer.subscription.ended', customer: @subscription.stripe_id)
           response.code.should eq("200") 
         end
