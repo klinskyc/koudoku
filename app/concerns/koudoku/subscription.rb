@@ -59,6 +59,9 @@ module Koudoku::Subscription
             finalize_downgrade! if downgrading?
             finalize_upgrade! if upgrading?
 
+            if pending_cancellation?
+              self.activate
+            end
           # if no plan has been selected.
           else
             prepare_for_cancelation

@@ -30,4 +30,5 @@ describe Koudoku::Subscription do
 		end
 
 	end  
+
 end
