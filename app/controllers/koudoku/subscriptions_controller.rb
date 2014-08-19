@@ -115,6 +115,15 @@ module Koudoku
 
     def create
       @subscription = ::Subscription.new(subscription_params)
+      if params[:subscription][:coupon_code]
+        coupon = ::Coupon.find_by_code(params[:subscription][:coupon_code])
+        unless coupon
+          flash[:error] = 'The coupon code you used was incorrect'
+          return render :new
+        end
+        @subscription.coupon = coupon
+      end
+
       @subscription.user = @owner
       if @subscription.save
         flash[:notice] = "You've been successfully upgraded."
