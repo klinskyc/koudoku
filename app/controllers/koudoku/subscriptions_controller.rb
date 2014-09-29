@@ -115,7 +115,7 @@ module Koudoku
 
     def create
       @subscription = ::Subscription.new(subscription_params)
-      if params[:subscription][:coupon_code]
+      unless params[:subscription][:coupon_code].empty?
         coupon = ::Coupon.find_by_code(params[:subscription][:coupon_code])
         unless coupon
           flash[:error] = 'The coupon code you used was incorrect'
