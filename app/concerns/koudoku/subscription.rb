@@ -12,16 +12,29 @@ module Koudoku::Subscription
 
     # update details.
     before_save :processing!
-    after_commit :check_confirm_prompt, on: :create
+    before_save :check_confirm_prompt
 
     def processing!
 
       # if confirm_prompt is present bypass processing
       if confirm_prompt.blank?
+        # if they're updating their credit card details.
+        if self.credit_card_token.present?
+          prepare_for_card_update
+
+          # fetch the customer.
+          customer = Stripe::Customer.retrieve(self.stripe_id)
+          customer.card = self.credit_card_token
+          customer.save
+
+          # update the last four based on this new card.
+          self.last_four = customer.cards.retrieve(customer.default_card).last4
+          self.card_type = customer.cards.retrieve(customer.default_card).brand
+
+          finalize_card_update!
 
         # if their package level has changed ..
-        if changing_plans?
-
+        else
           prepare_for_plan_change
 
           # and a customer exists in stripe ..
@@ -44,6 +57,8 @@ module Koudoku::Subscription
 
               finalize_downgrade! if downgrading?
               finalize_upgrade! if upgrading?
+
+              finalize_new_subscription! #we now except the id to be present at this point
 
             # if no plan has been selected.
             else
@@ -79,23 +94,6 @@ module Koudoku::Subscription
           end
 
           finalize_plan_change!
-
-        # if they're updating their credit card details.
-        elsif self.credit_card_token.present?
-
-          prepare_for_card_update
-
-          # fetch the customer.
-          customer = Stripe::Customer.retrieve(self.stripe_id)
-          customer.card = self.credit_card_token
-          customer.save
-
-          # update the last four based on this new card.
-          self.last_four = customer.cards.retrieve(customer.default_card).last4
-          self.card_type = customer.cards.retrieve(customer.default_card).brand
-
-          finalize_card_update!
-
         end
       end
     end
@@ -129,9 +127,6 @@ module Koudoku::Subscription
       # create a customer at that package level.
       customer = Stripe::Customer.create(customer_attributes)
 
-      finalize_new_customer!(customer.id, plan.price)
-      customer.update_subscription(:plan => self.plan.stripe_id, :prorate => Koudoku.prorate)
-
     rescue Stripe::CardError => card_error
       errors[:base] << card_error.message
       card_was_declined
@@ -142,9 +137,6 @@ module Koudoku::Subscription
     self.stripe_id = customer.id
     self.last_four = customer.cards.retrieve(customer.default_card).last4
     self.card_type = customer.cards.retrieve(customer.default_card).brand
-
-    finalize_new_subscription! #we now except the id to be present at this point
-    finalize_upgrade!
   end
 
 
