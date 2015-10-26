@@ -12,7 +12,7 @@ module Koudoku::Subscription
 
     # update details.
     before_save :processing!
-    before_create :check_confirm_prompt
+    after_commit :check_confirm_prompt, on: :create
 
     def processing!
 
@@ -143,7 +143,7 @@ module Koudoku::Subscription
     self.last_four = customer.cards.retrieve(customer.default_card).last4
     self.card_type = customer.cards.retrieve(customer.default_card).brand
 
-    finalize_new_subscription!
+    finalize_new_subscription! #we now except the id to be present at this point
     finalize_upgrade!
   end
 
