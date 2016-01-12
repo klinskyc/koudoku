@@ -5,7 +5,7 @@ describe Koudoku::Subscription do
   describe "states" do
     before :each do
       @customer = Customer.create(email: 'andrew.culver@gmail.com')
-
+      @plan = Plan.create
       allow_any_instance_of(Subscription).to receive(:create_new_customer).and_return true
     end
 
@@ -29,6 +29,15 @@ describe Koudoku::Subscription do
       @subscription = Subscription.create(customer_id: @customer.id, stripe_id: 'customer-id', plan_id: nil, aasm_state: 'active')
 
       expect(@subscription.cancelled?).to eq true
+    end
+
+    it "upgrading a previously cancelled subscription sets the state to active" do
+      ## stub stripe operations
+      allow(Stripe::Customer).to receive(:retrieve).and_return Stripe::Customer.new
+      allow_any_instance_of(Stripe::Customer).to receive(:update_subscription).and_return true
+
+      @subscription = Subscription.create(customer_id: @customer.id, stripe_id: 'customer-id', plan_id: @plan.id, aasm_state: 'cancelled')
+      expect(@subscription.active?).to eq true
     end
   end
 

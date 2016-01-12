@@ -18,7 +18,7 @@ module Koudoku::Subscription
       state :cancelled
 
       event :activate do
-        transitions from: :pending, to: :active
+        transitions from: [:pending, :cancelled], to: :active
       end
 
       event :cancel do
@@ -94,6 +94,8 @@ module Koudoku::Subscription
 
     finalize_downgrade! if downgrading?
     finalize_upgrade! if upgrading?
+
+    self.activate if cancelled?
 
     finalize_new_subscription! #we now except the id to be present at this point
   end
