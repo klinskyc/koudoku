@@ -18,61 +18,26 @@ module Koudoku::Subscription
 
       # if confirm_prompt is present bypass processing
       if confirm_prompt.blank?
+
         # if they're updating their credit card details.
         if self.credit_card_token.present?
-          prepare_for_card_update
-
-          # fetch the customer.
-          customer = Stripe::Customer.retrieve(self.stripe_id)
-          customer.card = self.credit_card_token
-          customer.save
-
-          # update the last four based on this new card.
-          self.last_four = customer.cards.retrieve(customer.default_card).last4
-          self.card_type = customer.cards.retrieve(customer.default_card).brand
-
-          finalize_card_update!
-
+          update_credit_card
         # if their package level has changed ..
         else
           prepare_for_plan_change
 
           # and a customer exists in stripe ..
           if stripe_id.present?
-
             # fetch the customer.
             customer = Stripe::Customer.retrieve(self.stripe_id)
 
             # if a new plan has been selected
             if self.plan.present?
-
-              # Record the new plan pricing.
-              self.current_price = self.plan.price
-
-              prepare_for_downgrade if downgrading?
-              prepare_for_upgrade if upgrading?
-
-              # update the package level with stripe.
-              customer.update_subscription(:plan => self.plan.stripe_id, :prorate => Koudoku.prorate)
-
-              finalize_downgrade! if downgrading?
-              finalize_upgrade! if upgrading?
-
-              finalize_new_subscription! #we now except the id to be present at this point
+              change_plans(customer)
 
             # if no plan has been selected.
             else
-
-              prepare_for_cancelation
-
-              # Remove the current pricing.
-              self.current_price = nil
-
-              # delete the subscription.
-              customer.cancel_subscription
-
-              finalize_cancelation!
-
+              cancel_plan
             end
 
           # when customer DOES NOT exist in stripe ..
@@ -81,14 +46,11 @@ module Koudoku::Subscription
             if self.plan.present?
               create_new_customer
             else
-
               # This should never happen.
-
               self.plan_id = nil
 
               # Remove any plan pricing.
               self.current_price = nil
-
             end
 
           end
@@ -97,6 +59,47 @@ module Koudoku::Subscription
         end
       end
     end
+  end
+
+  def change_plans(customer)
+    # Record the new plan pricing.
+    self.current_price = self.plan.price
+
+    prepare_for_downgrade if downgrading?
+    prepare_for_upgrade if upgrading?
+
+    # update the package level with stripe.
+    customer.update_subscription(:plan => self.plan.stripe_id, :prorate => Koudoku.prorate)
+
+    finalize_downgrade! if downgrading?
+    finalize_upgrade! if upgrading?
+
+    finalize_new_subscription! #we now except the id to be present at this point
+  end
+
+  def cancel_plan
+    prepare_for_cancelation
+    # Remove the current pricing.
+    self.current_price = nil
+    # delete the subscription.
+    customer.cancel_subscription
+
+    finalize_cancelation!
+  end
+
+  def update_credit_card
+    prepare_for_card_update
+
+    # fetch the customer.
+    customer = Stripe::Customer.retrieve(self.stripe_id)
+    customer.card = self.credit_card_token
+    customer.save
+
+    # update the last four based on this new card.
+    self.last_four = customer.cards.retrieve(customer.default_card).last4
+    self.card_type = customer.cards.retrieve(customer.default_card).brand
+
+    finalize_card_update!
   end
 
   def create_new_customer
