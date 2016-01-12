@@ -2,6 +2,7 @@ module Koudoku::Subscription
   extend ActiveSupport::Concern
 
   included do
+    include AASM
 
     # We don't store these one-time use tokens, but this is what Stripe provides
     # client-side after storing the credit card information.
@@ -10,12 +11,26 @@ module Koudoku::Subscription
 
     belongs_to :plan
 
+    # processing states
+    aasm column: :aasm_state do
+      state :pending, initial: true
+      state :active
+      state :cancelled
+
+      event :activate do
+        transitions from: :pending, to: :active
+      end
+
+      event :cancel do
+        transitions from: :active, to: :cancelled
+      end
+    end
+
     # update details.
     before_save :processing!
     before_save :check_confirm_prompt
 
     def processing!
-
       # if confirm_prompt is present bypass processing
       if confirm_prompt.blank?
 
@@ -28,18 +43,7 @@ module Koudoku::Subscription
 
           # and a customer exists in stripe ..
           if stripe_id.present?
-            # fetch the customer.
-            customer = Stripe::Customer.retrieve(self.stripe_id)
-
-            # if a new plan has been selected
-            if self.plan.present?
-              change_plans(customer)
-
-            # if no plan has been selected.
-            else
-              cancel_plan
-            end
-
+            init_plan_change
           # when customer DOES NOT exist in stripe ..
           else
             # if a new plan has been selected
@@ -55,9 +59,26 @@ module Koudoku::Subscription
 
           end
 
+          ## sets the status of the subscription to active
+          self.activate if pending?
+
           finalize_plan_change!
         end
       end
+    end
+  end
+
+  def init_plan_change
+    # fetch the customer.
+    customer = Stripe::Customer.retrieve(self.stripe_id)
+
+    # if a new plan has been selected
+    if self.plan.present?
+      change_plans(customer)
+
+    # if no plan has been selected.
+    else
+      cancel_plan(customer)
     end
   end
 
@@ -77,12 +98,15 @@ module Koudoku::Subscription
     finalize_new_subscription! #we now except the id to be present at this point
   end
 
-  def cancel_plan
+  def cancel_plan(customer)
     prepare_for_cancelation
     # Remove the current pricing.
     self.current_price = nil
     # delete the subscription.
     customer.cancel_subscription
+
+    ## set the status of the subscription to cancelled
+    self.cancel
 
     finalize_cancelation!
   end

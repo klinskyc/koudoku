@@ -9,6 +9,7 @@ class CreateSubscriptions < ActiveRecord::Migration
       t.string :card_type
       t.float :current_price
       t.integer :customer_id
+      t.string :aasm_state
 
       t.timestamps
     end
