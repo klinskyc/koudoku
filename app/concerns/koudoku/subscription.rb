@@ -31,14 +31,12 @@ module Koudoku::Subscription
     before_save :check_confirm_prompt
 
     def processing!
-      # if confirm_prompt is present bypass processing
+      # bypass processing if subscription is still yet to be confirmed
       if confirm_prompt.blank?
 
-        # if they're updating their credit card details.
-        if self.credit_card_token.present?
-          update_credit_card
         # if their package level has changed ..
-        else
+        if changing_plans?
+
           prepare_for_plan_change
 
           # and a customer exists in stripe ..
@@ -56,16 +54,20 @@ module Koudoku::Subscription
               # Remove any plan pricing.
               self.current_price = nil
             end
-
           end
 
-          ## sets the status of the subscription to active
           self.activate if pending?
 
           finalize_plan_change!
+
+        # if they're updating their credit card details.
+        elsif self.credit_card_token.present?
+          update_credit_card
         end
+
       end
     end
+
   end
 
   def init_plan_change

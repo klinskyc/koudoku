@@ -15,6 +15,8 @@ describe Koudoku::Subscription do
     end
 
     it "creating subscription without confirm_prompt sets to active" do
+      expect_any_instance_of(Subscription).to receive(:changing_plans?).and_return true
+
       allow_any_instance_of(Subscription).to receive(:init_plan_change).and_return true
       @subscription = Subscription.create(customer_id: @customer.id, stripe_id: 'customer-id')
 
@@ -25,6 +27,7 @@ describe Koudoku::Subscription do
       ## stub stripe operations
       allow(Stripe::Customer).to receive(:retrieve).and_return Stripe::Customer.new
       allow_any_instance_of(Stripe::Customer).to receive(:cancel_subscription).and_return true
+      expect_any_instance_of(Subscription).to receive(:changing_plans?).and_return true
 
       @subscription = Subscription.create(customer_id: @customer.id, stripe_id: 'customer-id', plan_id: nil, aasm_state: 'active')
 
