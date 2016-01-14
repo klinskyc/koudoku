@@ -3,10 +3,15 @@ module Koudoku
     before_filter :load_owner
     before_filter :show_existing_subscription, only: [:index, :new, :create], unless: :no_owner?
     before_filter :load_subscription, only: [:show, :cancel, :edit, :update, :confirm]
+    before_filter :load_coupon, only: [:index, :new, :create]
     before_filter :load_plans, only: [:index, :edit]
 
     def load_plans
       @plans = ::Plan.order(:price)
+    end
+
+    def load_coupon
+      @coupon = ::Coupon.find_by_code(session[:koudoku_coupon_code]) if session[:koudoku_coupon_code]
     end
 
     def unauthorized
@@ -68,7 +73,6 @@ module Koudoku
     end
 
     def index
-
       # don't bother showing the index if they've already got a subscription.
       if current_owner and current_owner.subscription.present?
         redirect_to koudoku.edit_owner_subscription_path(current_owner, current_owner.subscription)
