@@ -33,7 +33,6 @@ module Koudoku::Subscription
     def processing!
       # bypass processing if subscription is still yet to be confirmed
       if confirm_prompt.blank?
-
         # if their package level has changed ..
         if changing_plans?
 
@@ -155,6 +154,9 @@ module Koudoku::Subscription
 
       # create a customer at that package level.
       customer = Stripe::Customer.create(customer_attributes)
+
+      finalize_new_customer!(customer.id, plan.price)
+      customer.update_subscription(:plan => self.plan.stripe_id, :prorate => Koudoku.prorate)
 
     rescue Stripe::CardError => card_error
       errors[:base] << card_error.message
