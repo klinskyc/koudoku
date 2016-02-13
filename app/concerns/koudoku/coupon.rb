@@ -57,7 +57,7 @@ module Koudoku::Coupon
     end
 
     def stripe_valid_duration
-      errors.add(:duration, "is not valid. Valid durations include #{VALID_DURATIONS.join(',')}") unless VALID_DURATIONS.include? duration
+      errors.add(:duration, "is not valid. Valid durations include #{VALID_DURATIONS.join(',')}") unless VALID_DURATIONS.include? 'repeating'
     end
   end
 end
