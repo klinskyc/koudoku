@@ -21,7 +21,7 @@ module Koudoku::Coupon
     def create_stripe_coupon
       coupon_hash = {
         id: code,
-        duration: 'forever',
+        duration: duration,
         duration_in_months: duration_in_months,
         max_redemptions: max_redemptions,
         percent_off: percentage_off,
@@ -57,7 +57,7 @@ module Koudoku::Coupon
     end
 
     def stripe_valid_duration
-      errors.add(:duration, "is not valid. Valid durations include #{VALID_DURATIONS.join(',')}") unless VALID_DURATIONS.include? 'repeating'
+      errors.add(:duration, "is not valid. Valid durations include #{VALID_DURATIONS.join(',')}") unless VALID_DURATIONS.include? duration
     end
   end
 end

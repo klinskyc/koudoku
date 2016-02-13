@@ -121,7 +121,7 @@ module Koudoku
     def create
       @subscription = ::Subscription.new(subscription_params)
       @subscription.subscription_owner = @owner
-      @subscription.coupon_code = session[:koudoku_coupon_code]
+      @subscription.coupon_code = params["subscription"]["coupon"]
 
       if @subscription.save
         flash[:notice] = after_new_subscription_message
@@ -160,7 +160,7 @@ module Koudoku
 
       # If strong_parameters is around, use that.
       if defined?(ActionController::StrongParameters)
-        params.require(:subscription).permit(:plan_id, :stripe_id, :current_price, :credit_card_token, :card_type, :last_four)
+        params.require(:subscription).permit(:plan_id, :stripe_id, :current_price, :credit_card_token, :card_type, :last_four, :coupon)
       else
         # Otherwise, let's hope they're using attr_accessible to protect their models!
         params[:subscription]
