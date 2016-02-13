@@ -157,7 +157,7 @@ module Koudoku::Subscription
   # Set a Stripe coupon code that will be used when a new Stripe customer (a.k.a. Koudoku subscription)
   # is created
   def coupon_code=(new_code)
-    coupon =  Stripe::Coupon.retrieve(new_code)
+    coupon = Coupon.find_by_code(new_code)
   end
 
   # Pretty sure this wouldn't conflict with anything someone would put in their model
