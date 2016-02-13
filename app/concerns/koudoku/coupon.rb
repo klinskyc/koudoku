@@ -21,7 +21,7 @@ module Koudoku::Coupon
     def create_stripe_coupon
       coupon_hash = {
         id: code,
-        duration: duration,
+        duration: 'forever',
         duration_in_months: duration_in_months,
         max_redemptions: max_redemptions,
         percent_off: percentage_off,
