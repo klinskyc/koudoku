@@ -74,7 +74,7 @@ module Koudoku::Subscription
               }
 
               # If the class we're being included in supports coupons ..
-              if User
+              if self.class.name == "User"
                 if coupon.present?
                   customer_attributes[:coupon] = coupon.code
                 end
