@@ -76,6 +76,7 @@ module Koudoku::Subscription
 
               # If the class we're being included in supports coupons ..
               if self.class.name == "User"
+                dddd
                 if @coupon.present?
                   customer_attributes[:coupon] = @coupon.code
                 end
@@ -159,7 +160,6 @@ module Koudoku::Subscription
   # is created
   def coupon_code=(new_code)
     @coupon = ActiveRecord::Base::Coupon.find_by_code(new_code)
-    ddddd
   end
 
   # Pretty sure this wouldn't conflict with anything someone would put in their model
