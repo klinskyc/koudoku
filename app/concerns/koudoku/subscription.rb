@@ -56,6 +56,7 @@ module Koudoku::Subscription
 
         # when customer DOES NOT exist in stripe ..
         else
+
           # if a new plan has been selected
           if self.plan.present?
 
@@ -75,8 +76,8 @@ module Koudoku::Subscription
 
               # If the class we're being included in supports coupons ..
               if self.class.name == "User"
-                if coupon.present?
-                  customer_attributes[:coupon] = coupon.code
+                if @coupon.present?
+                  customer_attributes[:coupon] = @coupon.code
                 end
               end
 
@@ -157,7 +158,7 @@ module Koudoku::Subscription
   # Set a Stripe coupon code that will be used when a new Stripe customer (a.k.a. Koudoku subscription)
   # is created
   def coupon_code=(new_code)
-    coupon = ActiveRecord::Base::Coupon.find_by_code(new_code)
+    @coupon = ActiveRecord::Base::Coupon.find_by_code(new_code)
   end
 
   # Pretty sure this wouldn't conflict with anything someone would put in their model
