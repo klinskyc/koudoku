@@ -159,6 +159,7 @@ module Koudoku::Subscription
   # is created
   def coupon_code=(new_code)
     @coupon = ActiveRecord::Base::Coupon.find_by_code(new_code)
+    ddddd
   end
 
   # Pretty sure this wouldn't conflict with anything someone would put in their model
